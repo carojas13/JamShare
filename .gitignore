@@ -1,6 +1,3 @@
-node_modules/
-client/node_modules/
-server/node_modules/
 Junk
 package-lock.json
 client/package-lock.json
