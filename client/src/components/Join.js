@@ -13,7 +13,8 @@ import JoinModal from './JoinModal';
 const io = require('socket.io-client');
 const SERVER = "http://localhost:3001";
 // Join or create a Jam session room with link ID
-function Join() {
+function Join(props) {
+
 
     const [sessionID, setSessionID] = useState("");
     const [showModal, setModal] = useState(false);
@@ -23,10 +24,32 @@ function Join() {
     //breaks rendering
     const navigate = useNavigate();
     let { state: { guest } = {} } = useLocation(); //gets the variable we passed from navigate
-   //room code is invalid  
+    const [copied, setCopied] = useState(false);
+    const [value, setValue] = useState('');
+    const inputArea = useRef(null);
+  
+    function updateClipboard(newClip) {
+      navigator.clipboard.writeText(newClip).then(
+        () => {
+          setCopied("Copied!");
+        },
+        () => {
+          setCopied("Copy failed!");
+        }
+      );
+    }
+    
+    function copyLink() {
+      navigator.permissions
+        .query({ name: "clipboard-write" })
+        .then((result) => {
+          if (result.state === "granted" || result.state === "prompt") {
+            updateClipboard(inputArea.current?.innerText);
+          }
+        });
+    }
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(e.target.elements.session.value);
         let path = '/Room';
         handleShow();
         navigate(path, {state:{sessionID, guest}});
@@ -35,7 +58,7 @@ function Join() {
         room.preventDefault();
         handleShow();
         socket.on("create-session-response", session_ID => {
-            console.log("create session ")
+            console.log("create session line 61 ")
             console.log(session_ID)
             handleShow();
         })
@@ -44,8 +67,34 @@ function Join() {
 
     return (
         <>
-        <JoinModal show={showModal} title={guest} data={sessionID} onHide={handleClose}></JoinModal>
         <div id="container"  className={'centered'} >
+        <Modal {...props} aria-labelledby="contained-modal-title-vcenter"
+        centered
+        size="xl"
+        show={showModal} title={guest} data={sessionID} onHide={handleClose}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="contained-modal-title-vcenter">
+              {guest}, share this link with your fellow Jammers
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="show-grid">
+          <Container>
+            <Row>
+              <Col lg={4}></Col>
+                <Col lg={4} id="a" ref={inputArea} >
+                    {sessionID}
+                </Col>
+              <Col lg={4}></Col>
+            </Row>
+          </Container>
+        </Modal.Body>
+        <Modal.Footer>
+            <Button onClick={copyLink}>copy to clipboard</Button>
+            <Button onClick={handleSubmit} >Join Session</Button>
+            <Button onClick={handleClose}>Close</Button>
+        </Modal.Footer>
+      </Modal>
             <Container>
                 <Row>
                     <Col></Col>
