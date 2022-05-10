@@ -35,7 +35,7 @@ function Join() {
         room.preventDefault();
         handleShow();
         socket.on("create-session-response", session_ID => {
-            console.log("create session worked ?...")
+            console.log("create session ")
             console.log(session_ID)
             handleShow();
         })
