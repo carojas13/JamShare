@@ -5,7 +5,7 @@ class Clients {
     this.maxlength = 4;
   }
 
-  addClient(socketClientID, username)  {
+  addClient(socketClientID, username, session)  {
     if (this.maxlength <= this.clients.length) {
       throw "Room is full.";
     }
@@ -15,11 +15,11 @@ class Clients {
     } else {
       priv = false;
     }
-    var client = new Client(socketClientID, username, priv);
+    var client = new Client(session, username, priv);
     // initialize more client information if needed
     // create another map using other information?
     this.clients.push(client);
-    this.clientsMap.set(socketClientID, client)
+    this.clientsMap.set(session, client)
   }
 
   removeClient(socketClientID) {
@@ -43,7 +43,8 @@ class Clients {
   getUsernames() {
     let usernames = [];
     for (let i = 0; i < this.clients.length; i++) {
-      usernames.push(this.clients[i].getUsername())
+      console.log(this.clients[i]);
+      //usernames.push(this.clients[i].getUsername())
     }
     return usernames;
   }

@@ -93,11 +93,11 @@ io.on('connection', (socket) => {
   socket.on('joinRoom', (data)  => {
    // const user = userJoin(socket.id, username, room);
     socket.join(data.sessionID);
+    sessions.joinSession(data, socket);
     //sock
     socketRoom = data.sessionID;
     socketMap[socket.id] = data.guest;
     //Send chat history to client
-    socket.broadcast.to(data.sessionID).emit('message', console.log(`${data.guest} has joined the room ${data.sessionID}`))
     socket.emit('joinResponse', socketHistory[socketRoom]);
   });
 

@@ -30,8 +30,6 @@ function Join(props) {
 
     useEffect( () => {
       socket.on("create-session-response", session_ID => {
-        console.log("create session request to server")
-        console.log(session_ID)
         setSessionID(session_ID)
         handleShow();
       }) 

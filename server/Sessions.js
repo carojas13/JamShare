@@ -4,6 +4,7 @@ const Socket = require('socket.io');
 // server components:
 const Clients = require('./Clients.js'); 
 const Streams = require('./Stream.js');
+let clients = new Clients();
 
 class Sessions {
   constructor() {
@@ -24,7 +25,7 @@ class Sessions {
     var sess = new Session();
     let session = data.sessionID;
     if (session) 
-      sess.joinSession(socket, data.guest);
+      sess.joinSession(socket, data.guest, session);
     else {
       socket.emit('join-session-fail', data.sessionID);
       console.log('User %s attempted to join session %s which does not exist.', data.username, data.sessionID);
@@ -65,19 +66,18 @@ class Sessions {
 
 class Session {
   constructor(sessionID) {
-    this.clients = new Clients();
+  //  this.clients = new Clients();
     this.sessionID = sessionID;
     // game session in progress or not? disallow changes to player order during runtime
     this.gameSession = false;
   }
   
-  joinSession(socket, username){//apparently does not need the socket.id
+  joinSession(socket, username, session){//apparently does not need the socket.id
     try {
-        this.clients.addClient(socket.id, username);
-        socket.join(this.sessionID);
+        clients.addClient(socket.id, username, session);
         //send usernames to client from client object
-        let usernames = this.clients.getUsernames();
-        socket.emit('join-session-success', usernames);//
+        clients.getUsernames();
+        //socket.emit('usernames', usernames);//
     }
     catch (error) {
       socket.emit('join-session-failed');
