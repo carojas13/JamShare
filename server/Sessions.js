@@ -1,11 +1,11 @@
 //Communicates with Room.js primarily. 
 const Socket = require('socket.io');
+// const { default: Participants } = require('../client/src/components/Participants.js');
 
 // server components:
 const Clients = require('./Clients.js'); 
 const Streams = require('./Stream.js');
 let clients = new Clients();
-
 class Sessions {
   constructor() {
     //sessions indexed by sessionID containing clients
@@ -24,14 +24,14 @@ class Sessions {
   joinSession(data, socket) { //apparently does not need the socket.id
     var sess = new Session();
     let session = data.sessionID;
-    if (session) 
+    if (session){
       sess.joinSession(socket, data.guest, session);
+    }
     else {
       socket.emit('join-session-fail', data.sessionID);
       console.log('User %s attempted to join session %s which does not exist.', data.username, data.sessionID);
     }
   }
-
 
   startGameSession(sessionID) {
     let session = this.findSessionByID(sessionID);
@@ -44,9 +44,9 @@ class Sessions {
   }
 
   findSessionIDFromSocketID(socket) {
-      var sessionID = sessions.find((sessionID) => 
-        sessions[sessionID].clients.find((client) => 
-          client.id === socket.id));
+      var sessionID = this.sessions.find((sessionID) => 
+        sessions[sessionID].clients.clients.find((client) => 
+          client.socketID === socket.id));
       return sessionID;
   }
 
@@ -62,22 +62,34 @@ class Sessions {
     }
       return genSessionID;
   }
+
+  participantsOrder(data, socketID){
+    let session = this.findSessionIDFromSocketID(socketID);
+    session.updateParticipants(data);
+  }
 }
 
 class Session {
   constructor(sessionID) {
-  //  this.clients = new Clients();
+    //this.clients = new Clients();
     this.sessionID = sessionID;
     // game session in progress or not? disallow changes to player order during runtime
     this.gameSession = false;
   }
-  
-  joinSession(socket, username, session){//apparently does not need the socket.id
+  updateParticipants(data){
+    console.log("updating paricipants order");
+    socket.brodcast.to(sessionID).emit('participants-order', data);
+  }
+
+  joinSession(socket, username, session){
     try {
         clients.addClient(socket.id, username, session);
+        socket.join(session);
         //send usernames to client from client object
-        clients.getUsernames();
-        //socket.emit('usernames', usernames);//
+        let usernames = []
+        usernames = clients.getUsernames();
+        //socket.emit('join-session-success', usernames);
+        socket.emit('participants', usernames);
     }
     catch (error) {
       socket.emit('join-session-failed');

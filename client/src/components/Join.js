@@ -8,15 +8,19 @@ import FormLabel from "react-bootstrap/esm/FormLabel";
 import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { Socket } from 'socket.io-client';
 import Modal from 'react-bootstrap/Modal';
-
+//update list fron client due to drag and drop, server updates list and emites back to client
 import JoinModal from './JoinModal';
+import { initiateSocket } from './Socket';
 const io = require('socket.io-client');
 const SERVER = "http://localhost:3001";
+const _ = require("lodash");
 // Join or create a Jam session room with link ID
 function Join(props) {
 
     const [sessionID, setSessionID] = useState("");
     const [showModal, setModal] = useState(false);
+    const intialValues = [];
+    const [usernames, setUsernames] = useState([{}])
     const handleClose = () => setModal(false);
     const handleShow = () => setModal(true);
     const [copied, setCopied] = useState(false);
@@ -26,9 +30,16 @@ function Join(props) {
     //breaks rendering
     const navigate = useNavigate();
     let { state: { guest } = {} } = useLocation(); //gets the variable we passed from navigate
-  
+    let deep = []
 
     useEffect( () => {
+      socket.on('participants', (data) =>{
+        let deep = JSON.parse(JSON.stringify(data));
+        console.log(data);
+        console.log(deep);
+        setUsernames(deep);
+        console.log(usernames);
+      })
       socket.on("create-session-response", session_ID => {
         setSessionID(session_ID)
         handleShow();
@@ -37,7 +48,7 @@ function Join(props) {
         //add usernames to local global data from data.usernames
         socket.emit('joinRoom', {guest, sessionID}) 
         let path = '/Room';
-        navigate(path, {state:{sessionID, guest}});
+        navigate(path, {state:{sessionID, guest, usernames}});
       });
 
       socket.on('join-session-failed', ()=>{
@@ -45,24 +56,23 @@ function Join(props) {
       });
     }, [socket])
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log(e.target.elements.session.value);
-        console.log(sessionID)
-        // handleShow();
-        let data = {sessionID:sessionID, username:guest};
-        socket.emit('join-session', data);
-    }
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+    //     console.log(e.target.elements.session.value);
+    //     console.log(sessionID)
+    //     // handleShow();
+    //     let data = {sessionID:sessionID, username:guest};
+    //     socket.emit('join-session', data);
+    // }
     
     const joinSession = (join) => {
         socket.emit('joinRoom', {guest, sessionID}) 
         let path = '/Room';
-        navigate(path, {state:{sessionID, guest}});
+        navigate(path, {state:{sessionID, guest, deep}});
     }
 
     const joinExistingSession = (j) => {
       j.preventDefault();
-      console.log(sessionID);
       socket.emit("room-exists", {guest, sessionID});
     }
 

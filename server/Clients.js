@@ -44,7 +44,7 @@ class Clients {
     let usernames = [];
     for (let i = 0; i < this.clients.length; i++) {
       console.log(this.clients[i]);
-      //usernames.push(this.clients[i].getUsername())
+      usernames.push(this.clients[i])
     }
     return usernames;
   }
